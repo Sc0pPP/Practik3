@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "dgSpecHash": "bdPjrESKBag=",
+  "success": true,
+  "projectFilePath": "/Users/sowf/Projects/Practik3/Practik3/Practik3.csproj",
+  "expectedPackageFiles": [
+    "/Users/sowf/.nuget/packages/microsoft.aspnetcore.openapi/10.0.8/microsoft.aspnetcore.openapi.10.0.8.nupkg.sha512",
+    "/Users/sowf/.nuget/packages/microsoft.openapi/2.0.0/microsoft.openapi.2.0.0.nupkg.sha512",
+    "/Users/sowf/.nuget/packages/system.text.json/8.0.5/system.text.json.8.0.5.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1903",
+      "level": "Warning",
+      "message": "Package 'Microsoft.OpenApi' 2.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-v5pm-xwqc-g5wc",
+      "projectPath": "/Users/sowf/Projects/Practik3/Practik3/Practik3.csproj",
+      "warningLevel": 1,
+      "filePath": "/Users/sowf/Projects/Practik3/Practik3/Practik3.csproj",
+      "libraryId": "Microsoft.OpenApi",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    }
+  ]
+}
