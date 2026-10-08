@@ -123,6 +123,38 @@ app.MapGet("/api/cloth/search", async (string name, MyDbContext db) =>
 }).AllowAnonymous();
 
 
+app.MapPost("/api/orders", async (CreateOrderRequest request, ClaimsPrincipal user, MyDbContext db) =>
+{
+    if (string.IsNullOrWhiteSpace(request.Addres) || request.ClothIds == null || request.ClothIds.Count == 0)
+        return Results.BadRequest(new { Message = "укажи адрес или одну вещь " });
+
+    if (!int.TryParse(user.FindFirst("sub")?.Value, out var userId))
+        return Results.Unauthorized();
+
+    var existingIds = await db.Cloths
+        .Where(c => request.ClothIds.Contains(c.Id))
+        .Select(c => c.Id)
+        .ToListAsync();
+
+    var missing = request.ClothIds.Except(existingIds).ToList();
+    if (missing.Count > 0)
+        return Results.BadRequest(new { message = "одежда не нашлась", ids = missing });
+
+    var order = new Order()
+    {
+        DateTime = DateOnly.FromDateTime(System.DateTime.Now),
+        Addres = request.Addres,
+        UserId = userId,
+        Status = "Собирается",
+        Clothorders = request.ClothIds
+            .Select(id => new Clothorder { ClothId = id })
+            .ToList()
+    };
+    db.Orders.Add(order);
+    await db.SaveChangesAsync();
+    return Results.Created($"/api/orders/{order.Id}", new { order.Id, order.Status });
+}).RequireAuthorization();
+
 
 app.Run();
 
@@ -147,3 +179,4 @@ string CreateToken(User user)
 }
 
 public record LoginRequest(string Login, string Password);
+public record CreateOrderRequest(string Addres, List<int> ClothIds);
