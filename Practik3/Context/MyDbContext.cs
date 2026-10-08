@@ -101,6 +101,8 @@ public partial class MyDbContext : DbContext
 
             entity.ToTable("Order");
 
+            entity.Property(e => e.Status).HasDefaultValueSql("'Собирается'::text");
+
             entity.HasOne(d => d.User).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)

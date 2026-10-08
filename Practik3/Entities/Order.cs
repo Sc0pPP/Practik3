@@ -13,6 +13,8 @@ public partial class Order
 
     public int UserId { get; set; }
 
+    public string Status { get; set; } = null!;
+
     public virtual ICollection<Clothorder> Clothorders { get; set; } = new List<Clothorder>();
 
     public virtual User User { get; set; } = null!;

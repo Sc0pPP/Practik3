@@ -53,26 +53,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 
-string CreateToken(User user)
-{
-    var claims = new[]
-    {
-        new Claim("sub",  user.Id.ToString()),
-        new Claim("name", user.Login),
-        new Claim("role", user.UserType.Name)
-    };
-
-    var token = new JwtSecurityToken(
-        issuer: "JwtDemo",
-        audience: "JwtDemoApi",
-        claims: claims,
-        expires: DateTime.UtcNow.AddMinutes(15),
-        signingCredentials: new SigningCredentials(
-            key, SecurityAlgorithms.HmacSha256));
-
-    return new JwtSecurityTokenHandler().WriteToken(token);
-}
-
 app.MapPost("/api/auth/login", async (LoginRequest request, MyDbContext db) =>
 {
     if (string.IsNullOrWhiteSpace(request.Login)
@@ -103,8 +83,47 @@ app.MapGet("/api/me", (ClaimsPrincipal user) => Results.Ok(new
 app.MapGet("/api/admin", () => Results.Ok("Раздел администратора"))
     .RequireAuthorization(p => p.RequireAuthenticatedUser().RequireRole("Администратор"));
 
+app.MapGet("/api/cloth", async (MyDbContext db) =>
+        Results.Ok(await db.Cloths
+            .OrderBy(c => c.Id)
+            .Select(c => new
+            {
+                c.Id,
+                c.Name,
+                c.Price,
+                c.Description,
+                c.CountBuys,
+                c.IsActive,
+                type = c.Type != null ? c.Type.Name : null
+
+            })
+            .ToListAsync()))
+    .AllowAnonymous();
+
+
 
 
 
 app.Run();
+
+string CreateToken(User user)
+{
+    var claims = new[]
+    {
+        new Claim("sub",  user.Id.ToString()),
+        new Claim("name", user.Login),
+        new Claim("role", user.UserType.Name)
+    };
+
+    var token = new JwtSecurityToken(
+        issuer: "JwtDemo",
+        audience: "JwtDemoApi",
+        claims: claims,
+        expires: DateTime.UtcNow.AddMinutes(15),
+        signingCredentials: new SigningCredentials(
+            key, SecurityAlgorithms.HmacSha256));
+
+    return new JwtSecurityTokenHandler().WriteToken(token);
+}
+
 public record LoginRequest(string Login, string Password);
