@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
@@ -72,9 +73,29 @@ string CreateToken(User user)
     return new JwtSecurityTokenHandler().WriteToken(token);
 }
 
+app.MapPost("/api/auth/login", async (LoginRequest request, MyDbContext context) =>
+{
+    if (string.IsNullOrWhiteSpace(request.Login)
+        || string.IsNullOrWhiteSpace(request.Password))
+        return Results.Challenge();
 
+    var user = await context.Users
+        .Include(u => u.UserType)
+        .FirstOrDefaultAsync(u => u.Login == request.Login);
+
+    if (user == null || user.Password != request.Password)
+        return Results.Challenge();
+
+    return Results.Ok(new
+    {
+        access_token = CreateToken(user),
+        token_type = "bearer",
+    });
+
+}).AllowAnonymous();
 
 
 
 
 app.Run();
+public record LoginRequest(string Login, string Password);
