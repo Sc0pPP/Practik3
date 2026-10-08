@@ -186,6 +186,31 @@ app.MapGet("/api/order/status/{status}", async (MyDbContext db, string status) =
 
 }).RequireAuthorization();
 
+app.MapGet("/api/orders/user/{userId}", async (int userId, MyDbContext db) =>
+{
+    var orders = await db.Orders
+        .Where(o => o.UserId == userId)
+        .OrderBy(o => o.Id)
+        .Select(o => new
+        {
+            o.Id,
+            Date = o.DateTime,
+            o.Addres,
+            o.Status,
+            o.UserId,
+            UserLogin = o.User.Login,
+            Items = o.Clothorders.Select(co => new
+            {
+                co.ClothId,
+                co.Cloth!.Name,
+                co.Cloth.Price
+            }).ToList(),
+            Total = o.Clothorders.Sum(co => co.Cloth!.Price)
+        })
+        .ToListAsync();
+
+    return Results.Ok(orders);
+}).RequireAuthorization();
 
 app.Run();
 
