@@ -73,13 +73,13 @@ string CreateToken(User user)
     return new JwtSecurityTokenHandler().WriteToken(token);
 }
 
-app.MapPost("/api/auth/login", async (LoginRequest request, MyDbContext context) =>
+app.MapPost("/api/auth/login", async (LoginRequest request, MyDbContext db) =>
 {
     if (string.IsNullOrWhiteSpace(request.Login)
         || string.IsNullOrWhiteSpace(request.Password))
         return Results.Challenge();
 
-    var user = await context.Users
+    var user = await db.Users
         .Include(u => u.UserType)
         .FirstOrDefaultAsync(u => u.Login == request.Login);
 
@@ -89,10 +89,19 @@ app.MapPost("/api/auth/login", async (LoginRequest request, MyDbContext context)
     return Results.Ok(new
     {
         access_token = CreateToken(user),
-        token_type = "bearer",
+        token_type = "Bearer",
     });
 
 }).AllowAnonymous();
+
+app.MapGet("/api/me", (ClaimsPrincipal user) => Results.Ok(new
+{
+    login = user.Identity?.Name,
+    role = user.FindFirst("role")?.Value
+})).RequireAuthorization();
+
+app.MapGet("/api/admin", () => Results.Ok("Раздел администратора"))
+    .RequireAuthorization(p => p.RequireAuthenticatedUser().RequireRole("Администратор"));
 
 
 
