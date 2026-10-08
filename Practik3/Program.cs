@@ -155,6 +155,37 @@ app.MapPost("/api/orders", async (CreateOrderRequest request, ClaimsPrincipal us
     return Results.Created($"/api/orders/{order.Id}", new { order.Id, order.Status });
 }).RequireAuthorization();
 
+app.MapGet("/api/order/status/{status}", async (MyDbContext db, string status) =>
+{
+    string[] allowed = { "Собирается", "Едет", "Приехал" };
+    if (!allowed.Contains(status))
+        return Results.BadRequest(new { message = "допустимые статусы : Собирается, Едет, Приехало" });
+
+    var orders = await db.Orders
+        .Where(o => o.Status == status)
+        .OrderBy(o => o.Id)
+        .Select(o => new
+        {
+            o.Id,
+            Date = o.DateTime,
+            o.Addres,
+            o.Status,
+            o.UserId,
+            UserLogin = o.User.Login,
+            Items = o.Clothorders.Select(co => new
+            {
+                co.ClothId,
+                co.Cloth!.Name,
+                co.Cloth.Price
+            }).ToList(),
+            Total = o.Clothorders.Sum(co => co.Cloth!.Price)
+        })
+        .ToListAsync();
+
+    return Results.Ok(orders);
+
+}).RequireAuthorization();
+
 
 app.Run();
 
