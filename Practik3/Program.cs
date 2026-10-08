@@ -100,7 +100,27 @@ app.MapGet("/api/cloth", async (MyDbContext db) =>
             .ToListAsync()))
     .AllowAnonymous();
 
+app.MapGet("/api/cloth/search", async (string name, MyDbContext db) =>
+{
+    if (string.IsNullOrWhiteSpace(name))
+        return Results.BadRequest(new { message = "не указали часть названия йоу" });
 
+    var result = await db.Cloths
+        .Where(c => EF.Functions.ILike(c.Name!, $"%{name}%"))
+        .OrderBy(c => c.Id)
+        .Select(c => new
+        {
+
+            c.Id,
+            c.Name,
+            c.Price,
+            c.Description,
+            c.CountBuys,
+            c.IsActive,
+            Type = c.Type != null ? c.Type.Name : null
+        }).ToListAsync();
+    return Results.Ok(result);
+}).AllowAnonymous();
 
 
 
