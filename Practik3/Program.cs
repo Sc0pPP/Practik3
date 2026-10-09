@@ -32,6 +32,17 @@ app.MapPost("/api/cloth/stock", async (StockRequest r, ClothingContext db) =>
     return Results.Ok();
 });
 
+app.MapPost("/api/cloth/{id}/deactivate", async (int id, ClothingContext db) =>
+{
+    var cloth = await db.Cloths.FindAsync(id);
+    if (cloth is null) return Results.NotFound();
+    cloth.IsActive = false;
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
+
+
+
 app.Run();
 
 record RegisterRequest(string Login, string Password);
