@@ -1,0 +1,30 @@
+## .NET / Visual Studio / Rider
+
+# Build results
+bin/
+obj/
+out/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ll]og/
+TestResults/
+*.nupkg
+
+# IDE
+.vs/
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Office temp files
+~$*
